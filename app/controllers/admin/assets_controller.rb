@@ -121,4 +121,14 @@ class Admin::AssetsController < Admin::ResourceController
     clear_model_cache
     render :nothing => true
   end
+  
+  # Overwrite from Admin::ResourceController; pp = 10 and results are reversed
+  def index_page_for_model
+    parts = {:action => "index"}
+    if paginated? && model && i = model_class.all.reverse.index(model)
+      p = (i / 10) + 1
+      parts[:p] = p if p && p > 1
+    end
+    parts
+  end
 end
