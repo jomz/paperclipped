@@ -20,33 +20,32 @@ class Admin::AssetsController < Admin::ResourceController
   end
 
   def create
-    @asset = Asset.new(params[:asset])
-    if @asset.save
-      if params[:page]
-        @page = Page.find(params[:page])
-        @asset.pages << @page
-      end
-
-      respond_to do |format|
-        format.html {
-          flash[:notice] = "Asset successfully uploaded."
-          redirect_to(@page ? edit_admin_page_path(@page) : (params[:continue] ? edit_admin_asset_path(@asset) : admin_assets_path))
-        }
-        format.js {
-          responds_to_parent do
-            render :update do |page|
-              @attachment = PageAttachment.find(:first, :conditions => { :page_id => @page.id, :asset_id => @asset.id })
-              page.call('Asset.ChooseTabByName', 'page-attachments')
+    @assets = []
+    params[:asset][:asset].to_a.each do |uploaded_asset|
+      @asset = Asset.create(:title => params[:asset][:title], :asset => uploaded_asset)
+      @asset.pages << (@page = Page.find(params[:page])) if params[:page]
+      @assets << @asset
+    end
+    
+    respond_to do |format|
+      format.html {
+        flash[:notice] = "Asset successfully uploaded."
+        redirect_to(@page ? edit_admin_page_path(@page) : (params[:continue] ? edit_admin_asset_path(@asset) : admin_assets_path))
+      }
+      format.js {
+        responds_to_parent do
+          render :update do |page|
+            page.call('Asset.ChooseTabByName', 'page-attachments')
+            @assets.each do |asset|
+              @attachment = PageAttachment.find(:first, :conditions => { :page_id => @page.id, :asset_id => asset.id })
               page.insert_html :bottom, "attachments", :partial => 'admin/assets/asset', :locals => {:attachment => @attachment }
-              page.call('Asset.AddAsset', "attachment_#{@attachment.id}")  # we ought to reinitialise the sortable attachments too
+              page.call('Asset.AddAsset', "attachment_#{@attachment.id}")
               page.visual_effect :highlight, "attachment_#{@attachment.id}"
-              page.call('Asset.ResetForm')
             end
+            page.call('Asset.ResetForm')
           end
-        }
-      end
-    else
-      render :action => 'new'
+        end
+      }
     end
   end
 

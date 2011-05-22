@@ -3,7 +3,7 @@
     %div.file
       %label.upload
         = t("paperclipped.choose_upload")
-      = form.file_field :asset, :class => "", :style => "width: 100%"
+      = form.file_field :asset, :class => "", :style => "width: 100%", :multiple => true
 
     .upload-buttons
       = form.submit t("paperclipped.save_and_upload"), :class => "button"

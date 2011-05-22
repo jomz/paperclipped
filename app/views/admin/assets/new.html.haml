@@ -15,7 +15,7 @@
         %p.upload
           %label.upload
             = t("paperclipped.choose_upload")
-          = f.file_field :asset, :class => "", :style => "width: 100%"
+          = f.file_field :asset, :class => "", :style => "width: 100%", :multiple => true
      
         %p.buttons
           = save_model_button(@asset)
